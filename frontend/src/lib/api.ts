@@ -7,10 +7,15 @@ import type {
   RoutingDecision,
 } from "./types";
 
-const API_BASE = "http://localhost:8000";
+function getApiBase() {
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:8000`;
+  }
+  return "http://localhost:8000";
+}
 
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${url}`, {
+  const res = await fetch(`${getApiBase()}${url}`, {
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },
   });
@@ -36,7 +41,7 @@ export async function extractProfile(
   formData.append("file", file);
   formData.append("customer_name", customerName);
   formData.append("custom_instructions", customInstructions);
-  const res = await fetch(`${API_BASE}/extract/upload`, {
+  const res = await fetch(`${getApiBase()}/extract/upload`, {
     method: "POST",
     body: formData,
   });
@@ -66,7 +71,7 @@ export async function sendPrompt(
   customerId: string,
   prompt: string
 ): Promise<{ response: string; routing: Record<string, string> }> {
-  const res = await fetch(`${API_BASE}/v1/${customerId}/chat/completions`, {
+  const res = await fetch(`${getApiBase()}/v1/${customerId}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
