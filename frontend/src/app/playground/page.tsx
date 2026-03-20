@@ -18,11 +18,17 @@ interface HistoryEntry {
 
 export default function PlaygroundPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="text-muted-foreground text-sm animate-pulse">Loading...</div>}>
       <PlaygroundContent />
     </Suspense>
   );
 }
+
+const QUICK_PROMPTS = [
+  { label: "Simple", tier: "simple", text: "What is your return policy?", color: "border-green-500/30 text-green-400 hover:bg-green-500/10" },
+  { label: "Medium", tier: "medium", text: "Summarize the warranty coverage for my electronics purchase and explain what's included in the extended protection plan", color: "border-amber-500/30 text-amber-400 hover:bg-amber-500/10" },
+  { label: "Complex", tier: "complex", text: "Analyze the liability exposure across multiple product warranty claims, evaluate coverage gaps in our current policy structure, and recommend a comprehensive resolution strategy that minimizes legal risk while maintaining customer satisfaction", color: "border-red-500/30 text-red-400 hover:bg-red-500/10" },
+];
 
 function PlaygroundContent() {
   const searchParams = useSearchParams();
@@ -35,30 +41,17 @@ function PlaygroundContent() {
   useEffect(() => {
     getCustomers().then((c) => {
       setCustomers(c);
-      const preselected = searchParams.get("customer");
-      if (preselected) {
-        setSelectedCustomer(preselected);
-      } else if (c.length > 0) {
-        setSelectedCustomer(c[0].customer_id);
-      }
+      const pre = searchParams.get("customer");
+      setSelectedCustomer(pre || (c.length > 0 ? c[0].customer_id : ""));
     });
   }, [searchParams]);
 
   const handleSend = async () => {
     if (!selectedCustomer || !prompt.trim()) return;
-
     setLoading(true);
     try {
       const result = await sendPrompt(selectedCustomer, prompt);
-      setHistory((prev) => [
-        {
-          prompt,
-          response: result.response,
-          routing: result.routing,
-          timestamp: new Date().toLocaleTimeString(),
-        },
-        ...prev,
-      ]);
+      setHistory((prev) => [{ prompt, response: result.response, routing: result.routing, timestamp: new Date().toLocaleTimeString() }, ...prev]);
       setPrompt("");
     } catch (err) {
       console.error(err);
@@ -67,143 +60,157 @@ function PlaygroundContent() {
     }
   };
 
-  const selectedProfile = customers.find((c) => c.customer_id === selectedCustomer);
+  const selected = customers.find((c) => c.customer_id === selectedCustomer);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Playground</h1>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-xl font-bold tracking-tight">Playground</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">Test prompt routing in real-time</p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Input panel */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Customer</CardTitle>
-            </CardHeader>
-            <CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left panel */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Customer selector */}
+          <Card className="bg-card/50 border-border/50">
+            <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Customer</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
               <select
                 value={selectedCustomer}
                 onChange={(e) => setSelectedCustomer(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full bg-secondary/50 border border-border/50 rounded-md px-3 py-2 text-sm text-foreground"
               >
                 {customers.map((c) => (
-                  <option key={c.customer_id} value={c.customer_id}>
-                    {c.customer_name}
-                  </option>
+                  <option key={c.customer_id} value={c.customer_id}>{c.customer_name}</option>
                 ))}
               </select>
-              {selectedProfile && (
-                <div className="mt-3 space-y-1 text-xs text-gray-500">
-                  <div>Objective: {selectedProfile.objective.replace(/_/g, " ")}</div>
-                  <div>Region: {selectedProfile.constraints.region}</div>
-                  <div>Latency target: {selectedProfile.performance.latency_target_ms}ms</div>
+              {selected && (
+                <div className="space-y-1 text-[10px]">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Objective</span><span className="font-mono text-primary">{selected.objective.replace(/_/g, " ")}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Region</span><span className="font-mono text-blue-400">{selected.constraints.region}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Latency target</span><span className="font-mono">{selected.performance.latency_target_ms}ms</span>
+                  </div>
+                  {selected.constraints.forbidden_providers.length > 0 && (
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Blocked</span>
+                      <span className="font-mono text-red-400">{selected.constraints.forbidden_providers.join(", ")}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Send a Prompt</CardTitle>
-            </CardHeader>
+          {/* Prompt input */}
+          <Card className="bg-card/50 border-border/50">
+            <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Prompt</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Type your prompt here..."
+                placeholder="Type your prompt..."
                 rows={4}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSend();
-                }}
+                className="bg-secondary/30 border-border/50 text-sm resize-none"
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSend(); }}
               />
-              <Button
-                onClick={handleSend}
-                disabled={loading || !prompt.trim() || !selectedCustomer}
-                className="w-full"
-              >
+              <Button onClick={handleSend} disabled={loading || !prompt.trim() || !selectedCustomer} className="w-full text-xs">
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <span className="animate-spin h-3 w-3 border-2 border-primary-foreground border-t-transparent rounded-full" />
                     Routing...
                   </span>
-                ) : (
-                  "Send"
-                )}
+                ) : "Send"}
               </Button>
-              <div className="text-xs text-gray-400">Ctrl+Enter to send</div>
+              <div className="text-[9px] text-muted-foreground text-center">Ctrl+Enter to send</div>
             </CardContent>
           </Card>
 
           {/* Quick prompts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Quick Prompts</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {[
-                { label: "Simple", text: "What is your return policy?" },
-                { label: "Medium", text: "Summarize the warranty coverage for my electronics purchase and explain what's included" },
-                { label: "Complex", text: "Analyze the liability exposure across multiple product warranty claims, evaluate coverage gaps, and recommend a comprehensive resolution strategy that minimizes legal risk" },
-              ].map((q) => (
+          <Card className="bg-card/50 border-border/50">
+            <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Quick Prompts</CardTitle></CardHeader>
+            <CardContent className="space-y-1.5">
+              {QUICK_PROMPTS.map((q) => (
                 <button
                   key={q.label}
                   onClick={() => setPrompt(q.text)}
-                  className="w-full text-left text-xs p-2 rounded border hover:bg-gray-50 transition-colors"
+                  className={`w-full text-left text-[11px] p-2.5 rounded border transition-colors ${q.color}`}
                 >
-                  <span className="font-medium">{q.label}:</span> {q.text.slice(0, 60)}...
+                  <span className="font-semibold">{q.label}:</span> {q.text.slice(0, 80)}...
                 </button>
               ))}
             </CardContent>
           </Card>
         </div>
 
-        {/* Results panel */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Right panel - results */}
+        <div className="lg:col-span-8 space-y-4">
           {history.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-gray-400">
-                <p>Send a prompt to see routing decisions and responses</p>
+            <Card className="bg-card/50 border-border/50">
+              <CardContent className="py-20 text-center">
+                <div className="text-muted-foreground text-sm">Send a prompt to see routing decisions</div>
+                <div className="text-[10px] text-muted-foreground mt-1">The routing engine will classify your prompt and select the optimal model</div>
               </CardContent>
             </Card>
           ) : (
             history.map((entry, i) => (
-              <Card key={i} className={i === 0 ? "border-blue-200" : ""}>
+              <Card key={i} className={`bg-card/50 border-border/50 ${i === 0 ? "glow-cyan" : ""}`}>
                 <CardContent className="pt-4 space-y-3">
-                  {/* Routing info */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge
-                      className={
-                        entry.routing.classification === "simple"
-                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : entry.routing.classification === "complex"
-                          ? "bg-red-100 text-red-800 hover:bg-red-100"
-                          : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                      }
-                    >
-                      {entry.routing.classification}
-                    </Badge>
-                    <Badge variant="outline">{entry.routing.model}</Badge>
-                    <Badge variant="outline">{entry.routing.latency}ms</Badge>
-                    <Badge variant="outline">{entry.routing.tokens} tokens</Badge>
-                    <span className="text-xs text-gray-400 ml-auto">{entry.timestamp}</span>
+                  {/* Routing decision panel */}
+                  <div className="bg-secondary/30 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Routing Decision</div>
+                      <span className="text-[10px] text-muted-foreground font-mono">{entry.timestamp}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="outline" className={`text-[9px] ${
+                        entry.routing.classification === "simple" ? "border-green-500/30 text-green-400"
+                        : entry.routing.classification === "complex" ? "border-red-500/30 text-red-400"
+                        : "border-amber-500/30 text-amber-400"
+                      }`}>{entry.routing.classification}</Badge>
+                      <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">{entry.routing.model || entry.routing.selected_model}</Badge>
+                      {entry.routing.selected_provider && <Badge variant="outline" className="text-[9px]">{entry.routing.selected_provider}</Badge>}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {[
+                        { label: "Total Latency", value: `${entry.routing.latency || entry.routing.latency_ms || "?"}ms` },
+                        { label: "TTFT", value: `${entry.routing.ttft || entry.routing.ttft_ms || "?"}ms` },
+                        { label: "Classify", value: `${entry.routing.classifyMs || entry.routing.classify_ms || "?"}ms` },
+                        { label: "Cost", value: `$${Number(entry.routing.cost || 0).toFixed(6)}` },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="bg-secondary/40 rounded px-2 py-1">
+                          <div className="text-[8px] uppercase tracking-widest text-muted-foreground">{label}</div>
+                          <div className="text-[11px] font-mono">{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {entry.routing.reason && (
+                      <div className="text-[10px] text-muted-foreground">
+                        <span className="text-foreground font-medium">Why: </span>{entry.routing.reason}
+                      </div>
+                    )}
+                    {entry.routing.candidates_eliminated && typeof entry.routing.candidates_eliminated === "object" && Object.keys(entry.routing.candidates_eliminated).length > 0 && (
+                      <div className="text-[10px]">
+                        <span className="text-muted-foreground">Eliminated: </span>
+                        {Object.entries(entry.routing.candidates_eliminated).map(([m, r]) => (
+                          <span key={m} className="text-red-400">{m} ({String(r)}) </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Routing reason */}
-                  {entry.routing.reason && (
-                    <div className="text-xs bg-gray-50 p-2 rounded text-gray-600">
-                      <span className="font-medium">Why: </span>
-                      {entry.routing.reason}
-                    </div>
-                  )}
-
                   {/* Prompt */}
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-600">Prompt: </span>
-                    {entry.prompt}
+                  <div className="text-xs">
+                    <span className="text-muted-foreground font-medium">Prompt: </span>{entry.prompt}
                   </div>
 
                   {/* Response */}
-                  <div className="text-sm bg-blue-50/50 border border-blue-100 rounded-lg p-3 whitespace-pre-wrap">
+                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-xs leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                     {entry.response}
                   </div>
                 </CardContent>

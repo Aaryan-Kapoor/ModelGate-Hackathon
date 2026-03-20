@@ -65,7 +65,7 @@ export const updateModel = (name: string, enabled: boolean, description = "") =>
 export async function sendPrompt(
   customerId: string,
   prompt: string
-): Promise<{ response: string; routing: RoutingDecision & Record<string, string> }> {
+): Promise<{ response: string; routing: Record<string, string> }> {
   const res = await fetch(`${API_BASE}/v1/${customerId}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -102,6 +102,6 @@ export async function sendPrompt(
       tokens: String(usage.total_tokens || 0),
       input_tokens: String(usage.prompt_tokens || 0),
       output_tokens: String(usage.completion_tokens || 0),
-    } as RoutingDecision & Record<string, string>,
+    } as Record<string, string>,
   };
 }
