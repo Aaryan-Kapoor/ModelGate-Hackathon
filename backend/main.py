@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import init_db
 from backend.services.classifier import load_classifier, is_model_loaded
-from backend.routers import customers, extraction, proxy, logs
+from backend.routers import customers, extraction, proxy, logs, models
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,6 +40,9 @@ app.add_middleware(
         "X-Model-Used",
         "X-Classification",
         "X-Latency-Ms",
+        "X-TTFT-Ms",
+        "X-Classify-Ms",
+        "X-Cost",
     ],
 )
 
@@ -47,6 +50,7 @@ app.include_router(customers.router)
 app.include_router(extraction.router)
 app.include_router(proxy.router)
 app.include_router(logs.router)
+app.include_router(models.router)
 
 
 @app.get("/health")
