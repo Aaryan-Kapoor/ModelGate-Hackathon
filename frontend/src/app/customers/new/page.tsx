@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { extractProfile } from "@/lib/api";
 import type { CustomerProfile } from "@/lib/types";
@@ -18,6 +18,7 @@ export default function NewCustomerPage() {
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<CustomerProfile | null>(null);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -62,11 +63,24 @@ export default function NewCustomerPage() {
 
           <div>
             <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Contract Document</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.md,.pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) setFile(f);
+              }}
+            />
             <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
               onDrop={handleDrop}
-              onClick={() => document.getElementById("file-input")?.click()}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
               className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-all ${
                 dragOver ? "border-primary bg-primary/5 glow-cyan" : file ? "border-green-500/40 bg-green-500/5" : "border-border/50 hover:border-border"
               }`}
@@ -83,7 +97,6 @@ export default function NewCustomerPage() {
                   <div className="text-[10px] text-muted-foreground mt-1">or click to browse (.txt, .pdf)</div>
                 </div>
               )}
-              <input id="file-input" type="file" accept=".txt,.md,.pdf" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
             </div>
           </div>
 
