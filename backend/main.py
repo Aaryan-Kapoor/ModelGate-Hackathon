@@ -35,6 +35,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "X-Routing-Decision",
+        "X-Model-Used",
+        "X-Classification",
+        "X-Latency-Ms",
+    ],
 )
 
 app.include_router(customers.router)
