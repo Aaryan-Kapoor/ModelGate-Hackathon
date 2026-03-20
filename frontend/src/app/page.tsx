@@ -110,6 +110,39 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Cost savings banner */}
+      {stats.cost_savings_vs_premium > 0 && (
+        <Card className="bg-card/50 border-green-500/20 glow-green">
+          <CardContent className="py-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-green-400 mb-1">Intelligent Routing Savings</div>
+                <div className="text-sm text-muted-foreground">
+                  Without ModelGate, all requests would use the premium model tier
+                </div>
+              </div>
+              <div className="flex items-center gap-8">
+                <div className="text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Without ModelGate</div>
+                  <div className="text-lg font-bold font-mono text-red-400 line-through">${(stats.total_cost + stats.cost_savings_vs_premium).toFixed(4)}</div>
+                </div>
+                <div className="text-2xl text-muted-foreground">→</div>
+                <div className="text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">With ModelGate</div>
+                  <div className="text-lg font-bold font-mono text-green-400">${stats.total_cost.toFixed(4)}</div>
+                </div>
+                <div className="text-center bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
+                  <div className="text-[10px] uppercase tracking-widest text-green-400 mb-0.5">Saved</div>
+                  <div className="text-xl font-bold font-mono text-green-400">
+                    {((stats.cost_savings_vs_premium / (stats.total_cost + stats.cost_savings_vs_premium)) * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Request timeline */}
