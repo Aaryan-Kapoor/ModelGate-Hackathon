@@ -207,11 +207,11 @@ def get_customer_stats(customer_id: str) -> dict:
 
     # Cost if everything went to the most expensive model
     from backend.services.provider_registry import MODEL_CATALOG
-    premium_cost_input = max(m["cost_per_1k_input"] for m in MODEL_CATALOG.values())
-    premium_cost_output = max(m["cost_per_1k_output"] for m in MODEL_CATALOG.values())
+    premium_cost_input = max(m["cost_per_m_input"] for m in MODEL_CATALOG.values())
+    premium_cost_output = max(m["cost_per_m_output"] for m in MODEL_CATALOG.values())
     premium_total = sum(
-        ((r.get("input_tokens") or r["tokens_used"] // 2) / 1000) * premium_cost_input +
-        ((r.get("output_tokens") or r["tokens_used"] // 2) / 1000) * premium_cost_output
+        ((r.get("input_tokens") or r["tokens_used"] // 2) / 1_000_000) * premium_cost_input +
+        ((r.get("output_tokens") or r["tokens_used"] // 2) / 1_000_000) * premium_cost_output
         for r in rows
     )
 
@@ -301,11 +301,11 @@ def get_global_stats() -> dict:
     total_latency = sum(r["latency_ms"] for r in rows)
 
     from backend.services.provider_registry import MODEL_CATALOG
-    premium_cost_input = max(m["cost_per_1k_input"] for m in MODEL_CATALOG.values())
-    premium_cost_output = max(m["cost_per_1k_output"] for m in MODEL_CATALOG.values())
+    premium_cost_input = max(m["cost_per_m_input"] for m in MODEL_CATALOG.values())
+    premium_cost_output = max(m["cost_per_m_output"] for m in MODEL_CATALOG.values())
     premium_total = sum(
-        ((r.get("input_tokens") or r["tokens_used"] // 2) / 1000) * premium_cost_input +
-        ((r.get("output_tokens") or r["tokens_used"] // 2) / 1000) * premium_cost_output
+        ((r.get("input_tokens") or r["tokens_used"] // 2) / 1_000_000) * premium_cost_input +
+        ((r.get("output_tokens") or r["tokens_used"] // 2) / 1_000_000) * premium_cost_output
         for r in rows
     )
 

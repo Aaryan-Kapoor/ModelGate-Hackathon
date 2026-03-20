@@ -3,8 +3,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "anthropic",
         "openrouter_id": "anthropic/claude-3-5-haiku-20241022",
         "tier": "simple",
-        "cost_per_1k_input": 0.0008,
-        "cost_per_1k_output": 0.004,
+        "cost_per_m_input": 0.80,
+        "cost_per_m_output": 4.00,
         "avg_latency_ms": 350,
         "regions": ["US", "EU"],
         "max_context": 200000,
@@ -14,8 +14,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "openai",
         "openrouter_id": "openai/gpt-4o-mini",
         "tier": "simple",
-        "cost_per_1k_input": 0.00015,
-        "cost_per_1k_output": 0.0006,
+        "cost_per_m_input": 0.15,
+        "cost_per_m_output": 0.60,
         "avg_latency_ms": 400,
         "regions": ["US", "EU"],
         "max_context": 128000,
@@ -25,8 +25,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "anthropic",
         "openrouter_id": "anthropic/claude-sonnet-4",
         "tier": "medium",
-        "cost_per_1k_input": 0.003,
-        "cost_per_1k_output": 0.015,
+        "cost_per_m_input": 3.00,
+        "cost_per_m_output": 15.00,
         "avg_latency_ms": 900,
         "regions": ["US", "EU"],
         "max_context": 200000,
@@ -36,8 +36,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "openai",
         "openrouter_id": "openai/gpt-4o",
         "tier": "medium",
-        "cost_per_1k_input": 0.0025,
-        "cost_per_1k_output": 0.01,
+        "cost_per_m_input": 2.50,
+        "cost_per_m_output": 10.00,
         "avg_latency_ms": 800,
         "regions": ["US", "EU"],
         "max_context": 128000,
@@ -47,8 +47,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "google",
         "openrouter_id": "google/gemini-2.0-flash-001",
         "tier": "simple",
-        "cost_per_1k_input": 0.0001,
-        "cost_per_1k_output": 0.0004,
+        "cost_per_m_input": 0.10,
+        "cost_per_m_output": 0.40,
         "avg_latency_ms": 300,
         "regions": ["US", "EU"],
         "max_context": 1000000,
@@ -58,8 +58,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "google",
         "openrouter_id": "google/gemini-2.5-pro-preview-06-05",
         "tier": "complex",
-        "cost_per_1k_input": 0.0025,
-        "cost_per_1k_output": 0.015,
+        "cost_per_m_input": 2.50,
+        "cost_per_m_output": 15.00,
         "avg_latency_ms": 1500,
         "regions": ["US", "EU"],
         "max_context": 1000000,
@@ -69,8 +69,8 @@ MODEL_CATALOG: dict[str, dict] = {
         "provider": "deepseek",
         "openrouter_id": "deepseek/deepseek-chat-v3-0324",
         "tier": "medium",
-        "cost_per_1k_input": 0.0003,
-        "cost_per_1k_output": 0.0008,
+        "cost_per_m_input": 0.30,
+        "cost_per_m_output": 0.80,
         "avg_latency_ms": 600,
         "regions": ["CN", "US"],
         "max_context": 128000,
@@ -98,9 +98,9 @@ def estimate_cost(model_name: str, input_tokens: int, output_tokens: int) -> flo
     info = MODEL_CATALOG.get(model_name)
     if not info:
         return 0.0
-    input_cost = (input_tokens / 1000) * info["cost_per_1k_input"]
-    output_cost = (output_tokens / 1000) * info["cost_per_1k_output"]
-    return round(input_cost + output_cost, 6)
+    input_cost = (input_tokens / 1_000_000) * info["cost_per_m_input"]
+    output_cost = (output_tokens / 1_000_000) * info["cost_per_m_output"]
+    return round(input_cost + output_cost, 8)
 
 
 def get_all_providers() -> list[str]:

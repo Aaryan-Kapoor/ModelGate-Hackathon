@@ -87,12 +87,13 @@ def seed_request_logs():
         ],
     }
 
+    # Cost per million tokens (input, output)
     cost_map = {
-        "gpt-4o-mini": (0.00015, 0.0006),
-        "claude-haiku": (0.0008, 0.004),
-        "claude-sonnet": (0.003, 0.015),
-        "gpt-4o": (0.0025, 0.01),
-        "gemini-2.5-pro": (0.0025, 0.015),
+        "gpt-4o-mini": (0.15, 0.60),
+        "claude-haiku": (0.80, 4.00),
+        "claude-sonnet": (3.00, 15.00),
+        "gpt-4o": (2.50, 10.00),
+        "gemini-2.5-pro": (2.50, 15.00),
     }
 
     now = datetime.now(timezone.utc)
@@ -117,8 +118,8 @@ def seed_request_logs():
             input_tokens = len(prompt.split()) * 3 + random.randint(10, 60)
             output_tokens = random.randint(40, 500) if tier != "complex" else random.randint(200, 800)
             total_tokens = input_tokens + output_tokens
-            costs = cost_map.get(model_name, (0.001, 0.005))
-            cost = (input_tokens / 1000) * costs[0] + (output_tokens / 1000) * costs[1]
+            costs = cost_map.get(model_name, (1.0, 5.0))
+            cost = (input_tokens / 1_000_000) * costs[0] + (output_tokens / 1_000_000) * costs[1]
 
             hours_ago = random.randint(1, 72)
             timestamp = (now - timedelta(hours=hours_ago, minutes=random.randint(0, 59))).isoformat()
