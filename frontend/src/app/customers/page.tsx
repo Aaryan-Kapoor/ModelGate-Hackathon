@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getCustomers, getStats } from "@/lib/api";
+import { getCustomers, getStats, deleteCustomer } from "@/lib/api";
 import type { CustomerProfile, CustomerStats } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,25 +15,36 @@ const OBJ_COLORS: Record<string, string> = {
   low_cost: "border-green-500/40 text-green-400",
 };
 
-function CustomerCard({ customer, stats }: { customer: CustomerProfile; stats?: CustomerStats }) {
+function CustomerCard({ customer, stats, onDelete }: { customer: CustomerProfile; stats?: CustomerStats; onDelete: (id: string) => void }) {
   return (
-    <Link href={`/customers/${customer.customer_id}`}>
-      <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all cursor-pointer group h-full">
-        <CardContent className="pt-5 space-y-4">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-sm font-semibold group-hover:text-primary transition-colors">
-                {customer.customer_name}
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {customer.use_case.replace(/_/g, " ")}
-              </p>
-            </div>
+    <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all group h-full relative">
+      <Link href={`/customers/${customer.customer_id}`} className="absolute inset-0 z-0" />
+      <CardContent className="pt-5 space-y-4 relative z-10 pointer-events-none">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-sm font-semibold group-hover:text-primary transition-colors">
+              {customer.customer_name}
+            </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {customer.use_case.replace(/_/g, " ")}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 pointer-events-auto">
             <Badge variant="outline" className={`text-[9px] ${OBJ_COLORS[customer.objective] || ""}`}>
               {customer.objective.replace(/_/g, " ")}
             </Badge>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete ${customer.customer_name}?`)) onDelete(customer.customer_id); }}
+              className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Delete customer"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
+        </div>
 
           {/* Constraint badges */}
           <div className="flex flex-wrap gap-1.5">
@@ -87,7 +98,6 @@ function CustomerCard({ customer, stats }: { customer: CustomerProfile; stats?: 
           </div>
         </CardContent>
       </Card>
-    </Link>
   );
 }
 
@@ -141,7 +151,19 @@ export default function CustomersPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {customers.map((c) => (
-            <CustomerCard key={c.customer_id} customer={c} stats={statsMap[c.customer_id]} />
+            <CustomerCard
+              key={c.customer_id}
+              customer={c}
+              stats={statsMap[c.customer_id]}
+              onDelete={async (id) => {
+                try {
+                  await deleteCustomer(id);
+                  setCustomers((prev) => prev.filter((cu) => cu.customer_id !== id));
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            />
           ))}
         </div>
       )}

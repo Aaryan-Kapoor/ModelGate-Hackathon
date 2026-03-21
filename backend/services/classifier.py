@@ -60,6 +60,12 @@ def is_model_loaded() -> bool:
 
 
 def classify_prompt(prompt: str) -> str:
+    # Very short prompts are always simple — skip the model entirely
+    stripped = prompt.strip()
+    word_count = len(stripped.split())
+    if word_count <= 5 and not any(kw in stripped.lower() for kw in ["analyze", "build", "create", "write", "code", "implement"]):
+        return "simple"
+
     if _model_loaded:
         try:
             return _arch_router_classify(prompt)
