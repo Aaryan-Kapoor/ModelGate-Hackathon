@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -24,11 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Navbar />
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] w-full mx-auto">
-          {children}
+    <html lang="en" className={`${outfit.variable} ${spaceMono.variable} h-full antialiased`}>
+      <body className="h-screen flex flex-row font-sans overflow-hidden bg-background text-foreground">
+        <Sidebar />
+        <main className="flex-1 w-full h-full overflow-y-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto min-h-full">
+            {children}
+          </div>
         </main>
       </body>
     </html>
