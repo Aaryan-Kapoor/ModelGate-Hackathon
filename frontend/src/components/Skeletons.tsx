@@ -33,17 +33,11 @@ export function DashboardSkeleton() {
 
 export function CustomerListSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-6 w-32 bg-secondary" />
-          <Skeleton className="h-3 w-48 bg-secondary mt-2" />
-        </div>
-        <Skeleton className="h-8 w-36 bg-secondary rounded-md" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-52 rounded-lg bg-secondary" />
+    <div className="space-y-8 animate-in fade-in duration-300">
+      <Skeleton className="h-[26rem] rounded-[2.5rem] bg-secondary/80" />
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[38rem] rounded-[2rem] bg-secondary/80" />
         ))}
       </div>
     </div>
