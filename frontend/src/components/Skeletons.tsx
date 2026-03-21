@@ -4,27 +4,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
+    <div className="space-y-12 animate-fade-in-up">
+      <div className="flex items-end justify-between">
         <div>
-          <Skeleton className="h-6 w-48 bg-secondary" />
-          <Skeleton className="h-3 w-72 bg-secondary mt-2" />
+          <Skeleton className="h-10 w-64 bg-surface rounded-md" />
+          <Skeleton className="h-5 w-96 bg-surface mt-3 rounded-md" />
         </div>
-        <Skeleton className="h-4 w-40 bg-secondary" />
+        <Skeleton className="h-10 w-48 bg-surface rounded-full" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 py-8 border-y border-border/50">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-lg bg-secondary" />
+          <div key={i} className="p-4">
+            <Skeleton className="h-3 w-24 bg-surface mb-3 rounded" />
+            <Skeleton className="h-8 w-32 bg-surface rounded" />
+          </div>
         ))}
       </div>
-      <Skeleton className="h-10 rounded-lg bg-secondary" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Skeleton className="lg:col-span-2 h-64 rounded-lg bg-secondary" />
-        <Skeleton className="h-64 rounded-lg bg-secondary" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Skeleton className="lg:col-span-2 h-[300px] rounded-2xl bg-surface/50" />
+        <Skeleton className="h-[300px] rounded-2xl bg-surface/50" />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-border/50">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-56 rounded-lg bg-secondary" />
+          <Skeleton key={i} className="h-[250px] rounded-2xl bg-surface/50" />
         ))}
       </div>
     </div>
@@ -33,17 +35,30 @@ export function DashboardSkeleton() {
 
 export function CustomerListSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-12 animate-fade-in-up">
+      <div className="flex items-end justify-between">
         <div>
-          <Skeleton className="h-6 w-32 bg-secondary" />
-          <Skeleton className="h-3 w-48 bg-secondary mt-2" />
+          <Skeleton className="h-10 w-48 bg-surface rounded-md" />
+          <Skeleton className="h-5 w-72 bg-surface mt-3 rounded-md" />
         </div>
-        <Skeleton className="h-8 w-36 bg-secondary rounded-md" />
+        <Skeleton className="h-12 w-48 bg-surface rounded-md" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="bg-[#0a0a0a] border border-border rounded-2xl overflow-hidden">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-52 rounded-lg bg-secondary" />
+          <div key={i} className="flex items-center justify-between p-6 border-b border-border/50">
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-48 bg-surface rounded" />
+              <Skeleton className="h-4 w-64 bg-surface rounded" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20 bg-surface rounded" />
+              <Skeleton className="h-6 w-24 bg-surface rounded" />
+            </div>
+            <div className="flex gap-6">
+              <Skeleton className="h-10 w-16 bg-surface rounded" />
+              <Skeleton className="h-10 w-20 bg-surface rounded" />
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -52,30 +67,26 @@ export function CustomerListSkeleton() {
 
 export function ProfileSkeleton() {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-8 animate-fade-in-up">
       <div className="flex items-start justify-between">
         <div>
-          <Skeleton className="h-6 w-40 bg-secondary" />
-          <Skeleton className="h-3 w-24 bg-secondary mt-2" />
+          <Skeleton className="h-8 w-64 bg-surface rounded-md" />
+          <Skeleton className="h-4 w-32 bg-surface mt-3 rounded-md" />
         </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-8 w-28 bg-secondary rounded-md" />
-          <Skeleton className="h-8 w-24 bg-secondary rounded-md" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-32 bg-surface rounded-md" />
+          <Skeleton className="h-10 w-32 bg-surface rounded-md" />
         </div>
       </div>
-      <Skeleton className="h-14 rounded-lg bg-primary/5" />
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+      <Skeleton className="h-20 rounded-2xl bg-surface/50" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-lg bg-secondary" />
+          <Skeleton key={i} className="h-24 rounded-2xl bg-surface/50" />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Skeleton className="lg:col-span-2 h-56 rounded-lg bg-secondary" />
-        <Skeleton className="h-56 rounded-lg bg-secondary" />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Skeleton className="h-64 rounded-lg bg-secondary" />
-        <Skeleton className="h-64 rounded-lg bg-secondary" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Skeleton className="lg:col-span-2 h-72 rounded-2xl bg-surface/50" />
+        <Skeleton className="h-72 rounded-2xl bg-surface/50" />
       </div>
     </div>
   );
@@ -83,47 +94,34 @@ export function ProfileSkeleton() {
 
 export function LogsSkeleton() {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-8 animate-fade-in-up">
       <div className="flex items-start justify-between">
         <div>
-          <Skeleton className="h-6 w-56 bg-secondary" />
-          <Skeleton className="h-3 w-32 bg-secondary mt-2" />
+          <Skeleton className="h-8 w-48 bg-surface rounded-md" />
+          <Skeleton className="h-4 w-64 bg-surface mt-3 rounded-md" />
         </div>
-        <Skeleton className="h-8 w-28 bg-secondary rounded-md" />
+        <Skeleton className="h-10 w-32 bg-surface rounded-md" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-48 rounded-lg bg-secondary" />
-        <Skeleton className="h-48 rounded-lg bg-secondary" />
-      </div>
-      <div className="flex gap-1.5">
+      <div className="flex gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-7 w-16 rounded bg-secondary" />
+          <Skeleton key={i} className="h-8 w-24 rounded bg-surface" />
         ))}
       </div>
-      <Skeleton className="h-96 rounded-lg bg-secondary" />
+      <Skeleton className="h-[600px] rounded-2xl bg-surface/50" />
     </div>
   );
 }
 
 export function ModelsSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-6 w-36 bg-secondary" />
-          <Skeleton className="h-3 w-64 bg-secondary mt-2" />
-        </div>
-        <Skeleton className="h-4 w-32 bg-secondary" />
+    <div className="h-[calc(100vh-8rem)] flex flex-col animate-fade-in-up">
+      <div className="mb-6">
+        <Skeleton className="h-10 w-48 bg-surface rounded-md" />
+        <Skeleton className="h-5 w-96 bg-surface mt-3 rounded-md" />
       </div>
-      <div className="flex gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-28 rounded-lg bg-secondary" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-56 rounded-lg bg-secondary" />
-        ))}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-0">
+        <Skeleton className="h-full rounded-2xl bg-surface/30" />
+        <Skeleton className="h-full rounded-2xl bg-surface/30" />
       </div>
     </div>
   );
@@ -131,19 +129,19 @@ export function ModelsSkeleton() {
 
 export function PlaygroundSkeleton() {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
-      <div>
-        <Skeleton className="h-6 w-28 bg-secondary" />
-        <Skeleton className="h-3 w-48 bg-secondary mt-2" />
+    <div className="h-[calc(100vh-8rem)] flex flex-col animate-fade-in-up">
+      <div className="mb-6">
+        <Skeleton className="h-10 w-48 bg-surface rounded-md" />
+        <Skeleton className="h-5 w-96 bg-surface mt-3 rounded-md" />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-4 space-y-4">
-          <Skeleton className="h-36 rounded-lg bg-secondary" />
-          <Skeleton className="h-44 rounded-lg bg-secondary" />
-          <Skeleton className="h-36 rounded-lg bg-secondary" />
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
+        <div className="lg:col-span-4 space-y-6">
+          <Skeleton className="h-32 rounded-2xl bg-surface/50" />
+          <Skeleton className="h-48 rounded-2xl bg-surface/50" />
+          <Skeleton className="h-40 rounded-2xl bg-surface/50 mt-auto" />
         </div>
         <div className="lg:col-span-8">
-          <Skeleton className="h-64 rounded-lg bg-secondary" />
+          <Skeleton className="h-full rounded-2xl bg-surface/30" />
         </div>
       </div>
     </div>

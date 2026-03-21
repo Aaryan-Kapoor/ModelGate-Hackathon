@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ModelGate",
+  title: "ModelGate | Precision AI Routing",
   description: "Contract-Aware AI Control Plane",
 };
 
@@ -24,10 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col font-sans">
         <Navbar />
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 px-6 md:px-12 lg:px-24 py-12 max-w-[1800px] w-full mx-auto animate-fade-in-up">
           {children}
         </main>
       </body>

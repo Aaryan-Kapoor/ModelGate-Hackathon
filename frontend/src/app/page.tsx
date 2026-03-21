@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getGlobalStats, getAllLogs } from "@/lib/api";
 import type { GlobalStats, RequestLogEntry } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,41 +12,45 @@ import {
 } from "recharts";
 import { DashboardSkeleton } from "@/components/Skeletons";
 
-const COLORS = ["#38bdf8", "#34d399", "#fbbf24", "#f87171", "#a78bfa", "#fb923c"];
-const TIER_COLORS: Record<string, string> = { simple: "#34d399", medium: "#fbbf24", complex: "#f87171" };
+const COLORS = ["#00e5ff", "#7000ff", "#ff3366", "#00ff9d", "#ffb800", "#ffffff"];
 
-function StatCard({ label, value, sub, color = "cyan" }: { label: string; value: string; sub?: string; color?: string }) {
-  const glowClass = color === "green" ? "glow-green" : color === "amber" ? "glow-amber" : color === "red" ? "glow-red" : "glow-cyan";
+function StatBlock({ label, value, sub, color = "primary" }: { label: string; value: string; sub?: string; color?: string }) {
+  const colorClass = 
+    color === "success" ? "text-success" : 
+    color === "warning" ? "text-warning" : 
+    color === "danger" ? "text-danger" : 
+    "text-primary";
+    
   return (
-    <div className={`bg-card border border-border/50 rounded-lg p-4 ${glowClass} transition-all hover:scale-[1.02]`}>
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
-      <div className="text-2xl font-bold stat-value font-mono">{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
+    <div className="flex flex-col gap-1 p-4 rounded-xl hover:bg-surface/50 transition-colors duration-300">
+      <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{label}</div>
+      <div className={`text-4xl font-light tracking-tight font-mono ${colorClass}`}>{value}</div>
+      {sub && <div className="text-sm text-muted-foreground">{sub}</div>}
     </div>
   );
 }
 
 function LiveFeed({ logs }: { logs: RequestLogEntry[] }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1 font-mono text-sm">
       {logs.slice(0, 12).map((log) => (
-        <div key={log.id} className="flex items-center gap-3 text-xs py-1.5 px-2 rounded bg-secondary/30 hover:bg-secondary/60 transition-colors">
-          <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
-            log.status === "success" ? "bg-green-500" : "bg-red-500"
+        <div key={log.id} className="group flex items-center gap-4 py-2 px-3 rounded-md hover:bg-surface transition-colors">
+          <span className={`h-2 w-2 rounded-full flex-shrink-0 ${
+            log.status === "success" ? "bg-success shadow-[0_0_8px_rgba(0,255,157,0.5)]" : "bg-danger shadow-[0_0_8px_rgba(255,51,102,0.5)]"
           }`} />
-          <span className="text-muted-foreground font-mono w-16 flex-shrink-0">
-            {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          <span className="text-muted-foreground w-16 flex-shrink-0">
+            {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
-          <Badge variant="outline" className={`text-[9px] px-1.5 flex-shrink-0 ${
-            log.classification === "simple" ? "border-green-500/30 text-green-400"
-            : log.classification === "complex" ? "border-red-500/30 text-red-400"
-            : "border-amber-500/30 text-amber-400"
+          <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 border ${
+            log.classification === "simple" ? "border-success/30 text-success bg-success/5"
+            : log.classification === "complex" ? "border-danger/30 text-danger bg-danger/5"
+            : "border-warning/30 text-warning bg-warning/5"
           }`}>
             {log.classification}
-          </Badge>
-          <span className="font-mono text-[11px] text-primary w-24 flex-shrink-0">{log.selected_model}</span>
-          <span className="truncate text-muted-foreground flex-1">{log.prompt_preview}</span>
-          <span className="font-mono text-muted-foreground w-14 text-right flex-shrink-0">{log.latency_ms}ms</span>
+          </span>
+          <span className="text-primary w-28 flex-shrink-0 truncate">{log.selected_model}</span>
+          <span className="truncate text-muted-foreground flex-1 group-hover:text-foreground transition-colors">{log.prompt_preview}</span>
+          <span className="text-muted-foreground w-16 text-right flex-shrink-0">{log.latency_ms}ms</span>
         </div>
       ))}
     </div>
@@ -77,227 +80,206 @@ export default function DashboardPage() {
   const hasData = stats.total_requests > 0;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-12 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Control Plane Overview</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time AI inference monitoring and routing analytics</p>
+          <h1 className="text-4xl font-light tracking-tight mb-2">Control Plane</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl">Real-time AI inference monitoring and intelligent routing analytics.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${hasData ? "bg-green-500 animate-pulse-dot" : "bg-amber-500"}`} />
-          <span className="text-xs text-muted-foreground font-mono">{hasData ? "ALL SYSTEMS OPERATIONAL" : "AWAITING FIRST REQUEST"}</span>
+        <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-border bg-surface/50 backdrop-blur-md">
+          <span className={`h-2.5 w-2.5 rounded-full ${hasData ? "bg-success animate-pulse-glow" : "bg-warning"}`} />
+          <span className="text-sm font-mono tracking-wide text-muted-foreground uppercase">{hasData ? "All Systems Operational" : "Awaiting First Request"}</span>
         </div>
       </div>
 
       {/* Empty state */}
       {!hasData && (
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="py-16 text-center space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">
-                {stats.total_customers === 0 ? "Welcome to ModelGate" : "No Requests Yet"}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-                {stats.total_customers === 0
-                  ? "Get started by configuring your model registry and onboarding your first customer. Upload a contract to automatically generate an AI routing profile."
-                  : "You have customers configured but no requests have been routed yet. Use the Playground to send your first test prompt, or point an application at a customer endpoint."}
-              </p>
-            </div>
-            <div className="flex justify-center gap-3 pt-2">
-              {stats.total_customers === 0 ? (
-                <>
-                  <Link href="/models">
-                    <Button variant="outline" size="sm" className="text-xs">Configure Models</Button>
-                  </Link>
-                  <Link href="/customers/new">
-                    <Button size="sm" className="text-xs">Onboard First Customer</Button>
-                  </Link>
-                </>
-              ) : (
-                <Link href="/playground">
-                  <Button size="sm" className="text-xs">Open Playground</Button>
+        <div className="glass-panel rounded-2xl p-16 text-center max-w-3xl mx-auto mt-12 border border-border">
+          <div className="mx-auto w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+            <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+          </div>
+          <h2 className="text-2xl font-light mb-3">
+            {stats.total_customers === 0 ? "Welcome to ModelGate" : "No Requests Yet"}
+          </h2>
+          <p className="text-muted-foreground mb-8 text-lg">
+            {stats.total_customers === 0
+              ? "Get started by configuring your model registry and onboarding your first customer. Upload a contract to automatically generate an AI routing profile."
+              : "You have customers configured but no requests have been routed yet. Use the Playground to send your first test prompt, or point an application at a customer endpoint."}
+          </p>
+          <div className="flex justify-center gap-4">
+            {stats.total_customers === 0 ? (
+              <>
+                <Link href="/models">
+                  <Button variant="outline" size="lg" className="border-border hover:bg-surface">Configure Models</Button>
                 </Link>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatCard label="Total Requests" value={stats.total_requests.toLocaleString()} sub={`${stats.requests_today} today`} />
-        <StatCard label="Customers" value={stats.total_customers.toString()} color="green" />
-        <StatCard label="Total Cost" value={`$${stats.total_cost.toFixed(4)}`} sub={`$${stats.cost_today.toFixed(4)} today`} color="amber" />
-        <StatCard
-          label="Cost Savings"
-          value={`$${stats.cost_savings_vs_premium.toFixed(4)}`}
-          sub="vs always-premium"
-          color="green"
-        />
-        <StatCard label="Avg Latency" value={`${stats.avg_latency_ms.toFixed(0)}ms`} />
-        <StatCard
-          label="Models Active"
-          value={Object.keys(stats.model_distribution).length.toString()}
-          sub={`${Object.keys(stats.provider_distribution).length} providers`}
-        />
-      </div>
-
-      {/* Cost savings banner */}
-      {hasData && stats.cost_savings_vs_premium > 0 && (
-        <Card className="bg-card/50 border-green-500/20 glow-green">
-          <CardContent className="py-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] uppercase tracking-widest text-green-400 mb-1">Intelligent Routing Savings</div>
-                <div className="text-sm text-muted-foreground">
-                  Without ModelGate, all requests would use the premium model tier
-                </div>
-              </div>
-              <div className="flex items-center gap-8">
-                <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Without ModelGate</div>
-                  <div className="text-lg font-bold font-mono text-red-400 line-through">${(stats.total_cost + stats.cost_savings_vs_premium).toFixed(4)}</div>
-                </div>
-                <div className="text-2xl text-muted-foreground">→</div>
-                <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">With ModelGate</div>
-                  <div className="text-lg font-bold font-mono text-green-400">${stats.total_cost.toFixed(4)}</div>
-                </div>
-                <div className="text-center bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
-                  <div className="text-[10px] uppercase tracking-widest text-green-400 mb-0.5">Saved</div>
-                  <div className="text-xl font-bold font-mono text-green-400">
-                    {((stats.cost_savings_vs_premium / (stats.total_cost + stats.cost_savings_vs_premium)) * 100).toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Charts row */}
-      {hasData && (<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Request timeline */}
-        <Card className="lg:col-span-2 bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Request Volume (Last 24h)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={hourlyData}>
-                <defs>
-                  <linearGradient id="reqGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="hour" tick={{ fontSize: 9, fill: "#6b7280" }} tickFormatter={(v) => v.split(" ")[1] || v} />
-                <YAxis tick={{ fontSize: 9, fill: "#6b7280" }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: "6px", fontSize: "11px" }}
-                  labelStyle={{ color: "#9ca3af" }}
-                />
-                <Area type="monotone" dataKey="count" stroke="#38bdf8" fill="url(#reqGradient)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Model distribution */}
-        <Card className="bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Model Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={modelData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} dataKey="value" stroke="none">
-                  {modelData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: "6px", fontSize: "11px" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-              {modelData.map((d, i) => (
-                <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  <span className="text-muted-foreground">{d.name}</span>
-                  <span className="font-mono">{d.value}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>)}
-
-      {/* Bottom row */}
-      {hasData && (<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Provider breakdown */}
-        <Card className="bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Provider Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={providerData} layout="vertical">
-                <XAxis type="number" tick={{ fontSize: 9, fill: "#6b7280" }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#9ca3af" }} width={70} />
-                <Tooltip contentStyle={{ backgroundColor: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: "6px", fontSize: "11px" }} />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                  {providerData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Customer usage */}
-        <Card className="bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Customer Usage</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {customerData.map((c) => (
-              <Link key={c.name} href={`/customers/${c.name}`}>
-                <div className="flex items-center justify-between py-2 px-3 rounded-md bg-secondary/30 hover:bg-secondary/60 transition-colors cursor-pointer">
-                  <span className="text-sm font-medium">{c.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-muted-foreground">{c.count} requests</span>
-                    <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-                  </div>
-                </div>
+                <Link href="/customers/new">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">Onboard First Customer</Button>
+                </Link>
+              </>
+            ) : (
+              <Link href="/playground">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">Open Playground</Button>
               </Link>
-            ))}
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </div>
+      )}
 
-        {/* Live feed */}
-        <Card className="lg:col-span-1 bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Live Request Feed</CardTitle>
-              <div className="flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse-dot" />
-                <span className="text-[9px] text-muted-foreground font-mono">STREAMING</span>
+      {hasData && (
+        <>
+          {/* Stat blocks */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 py-8 border-y border-border/50">
+            <StatBlock label="Total Requests" value={stats.total_requests.toLocaleString()} sub={`${stats.requests_today} today`} />
+            <StatBlock label="Customers" value={stats.total_customers.toString()} color="primary" />
+            <StatBlock label="Total Cost" value={`$${stats.total_cost.toFixed(4)}`} sub={`$${stats.cost_today.toFixed(4)} today`} color="warning" />
+            <StatBlock label="Cost Savings" value={`$${stats.cost_savings_vs_premium.toFixed(4)}`} sub="vs always-premium" color="success" />
+            <StatBlock label="Avg Latency" value={`${stats.avg_latency_ms.toFixed(0)}ms`} />
+            <StatBlock label="Models Active" value={Object.keys(stats.model_distribution).length.toString()} sub={`${Object.keys(stats.provider_distribution).length} providers`} />
+          </div>
+
+          {/* Cost savings banner */}
+          {stats.cost_savings_vs_premium > 0 && (
+            <div className="relative overflow-hidden rounded-2xl border border-success/20 bg-success/5 p-8">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-success/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                <div>
+                  <h3 className="text-success font-medium tracking-widest uppercase text-sm mb-2">Intelligent Routing Savings</h3>
+                  <p className="text-muted-foreground text-lg">Without ModelGate, all requests would use the premium model tier.</p>
+                </div>
+                <div className="flex items-center gap-8 md:gap-12">
+                  <div className="text-center">
+                    <div className="text-xs tracking-widest text-muted-foreground uppercase mb-2">Without ModelGate</div>
+                    <div className="text-3xl font-light font-mono text-danger line-through opacity-70">${(stats.total_cost + stats.cost_savings_vs_premium).toFixed(4)}</div>
+                  </div>
+                  <div className="text-4xl text-muted-foreground font-light">→</div>
+                  <div className="text-center">
+                    <div className="text-xs tracking-widest text-muted-foreground uppercase mb-2">With ModelGate</div>
+                    <div className="text-3xl font-light font-mono text-success">${stats.total_cost.toFixed(4)}</div>
+                  </div>
+                  <div className="text-center bg-success/10 border border-success/30 rounded-xl px-6 py-4">
+                    <div className="text-xs tracking-widest text-success uppercase mb-1">Saved</div>
+                    <div className="text-3xl font-bold font-mono text-success">
+                      {((stats.cost_savings_vs_premium / (stats.total_cost + stats.cost_savings_vs_premium)) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <LiveFeed logs={logs} />
-          </CardContent>
-        </Card>
-      </div>)}
+          )}
+
+          {/* Visual Anchors: Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Request timeline */}
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Request Volume (Last 24h)</h3>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={hourlyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="reqGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00e5ff" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#00e5ff" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="hour" tick={{ fontSize: 12, fill: "#888888", fontFamily: "var(--font-jetbrains-mono)" }} tickFormatter={(v) => v.split(" ")[1] || v} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis tick={{ fontSize: 12, fill: "#888888", fontFamily: "var(--font-jetbrains-mono)" }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#111111", border: "1px solid #222222", borderRadius: "8px", fontSize: "12px", fontFamily: "var(--font-jetbrains-mono)" }}
+                      itemStyle={{ color: "#00e5ff" }}
+                    />
+                    <Area type="monotone" dataKey="count" stroke="#00e5ff" fill="url(#reqGradient)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Model distribution */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Model Distribution</h3>
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={modelData} cx="50%" cy="50%" innerRadius={70} outerRadius={100} dataKey="value" stroke="none" paddingAngle={2}>
+                      {modelData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#111111", border: "1px solid #222222", borderRadius: "8px", fontSize: "12px", fontFamily: "var(--font-jetbrains-mono)" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                {modelData.map((d, i) => (
+                  <div key={d.name} className="flex items-center gap-2 text-sm">
+                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span className="text-muted-foreground">{d.name}</span>
+                    <span className="font-mono text-foreground">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-border/50">
+            {/* Provider breakdown */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Provider Breakdown</h3>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={providerData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "#888888" }} width={80} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "#111111", border: "1px solid #222222", borderRadius: "8px", fontSize: "12px", fontFamily: "var(--font-jetbrains-mono)" }} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                      {providerData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Customer usage */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Customer Usage</h3>
+              <div className="space-y-2">
+                {customerData.map((c) => (
+                  <Link key={c.name} href={`/customers/${c.name}`} className="block group">
+                    <div className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-surface transition-colors border border-transparent group-hover:border-border/50">
+                      <span className="text-base font-medium group-hover:text-primary transition-colors">{c.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-mono text-muted-foreground">{c.count} reqs</span>
+                        <svg className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Live feed */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Terminal Log</h3>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-success animate-pulse-glow" />
+                  <span className="text-xs text-success font-mono uppercase tracking-wider">Streaming</span>
+                </div>
+              </div>
+              <div className="bg-[#0a0a0a] border border-border rounded-xl p-4 h-[400px] overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a] pointer-events-none z-10" />
+                <LiveFeed logs={logs} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

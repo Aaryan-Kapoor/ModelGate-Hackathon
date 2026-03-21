@@ -5,8 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getLogs, getStats, getCustomer } from "@/lib/api";
 import type { RequestLogEntry, CustomerStats, CustomerProfile } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -14,86 +12,88 @@ import {
 } from "recharts";
 import { LogsSkeleton } from "@/components/Skeletons";
 
-const COLORS = ["#38bdf8", "#34d399", "#fbbf24", "#f87171", "#a78bfa", "#fb923c"];
-const TT_STYLE = { backgroundColor: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: "6px", fontSize: "11px" };
+const COLORS = ["#00e5ff", "#7000ff", "#ff3366", "#00ff9d", "#ffb800", "#ffffff"];
+const TT_STYLE = { backgroundColor: "#111111", border: "1px solid #222222", borderRadius: "8px", fontSize: "12px", fontFamily: "var(--font-jetbrains-mono)" };
 
 const TIER_BADGE: Record<string, string> = {
-  simple: "border-green-500/30 text-green-400",
-  medium: "border-amber-500/30 text-amber-400",
-  complex: "border-red-500/30 text-red-400",
+  simple: "border-success/30 text-success bg-success/5",
+  medium: "border-warning/30 text-warning bg-warning/5",
+  complex: "border-danger/30 text-danger bg-danger/5",
 };
 
 function LogRow({ log, expanded, onToggle }: { log: RequestLogEntry; expanded: boolean; onToggle: () => void }) {
   return (
     <>
-      <tr onClick={onToggle} className="cursor-pointer hover:bg-secondary/30 transition-colors border-b border-border/20">
-        <td className="px-3 py-2.5 text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+      <tr onClick={onToggle} className="cursor-pointer hover:bg-surface/50 transition-colors border-b border-border/30 group">
+        <td className="px-4 py-4 text-xs text-muted-foreground font-mono whitespace-nowrap">
           {new Date(log.timestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
         </td>
-        <td className="px-3 py-2.5 text-xs max-w-[300px] truncate">{log.prompt_preview}</td>
-        <td className="px-3 py-2.5">
-          <Badge variant="outline" className={`text-[9px] ${TIER_BADGE[log.classification] || ""}`}>
+        <td className="px-4 py-4 text-sm max-w-[300px] truncate group-hover:text-primary transition-colors">{log.prompt_preview}</td>
+        <td className="px-4 py-4">
+          <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded border ${TIER_BADGE[log.classification] || "border-border text-muted-foreground"}`}>
             {log.classification}
-          </Badge>
+          </span>
         </td>
-        <td className="px-3 py-2.5 text-xs font-mono text-primary">{log.selected_model}</td>
-        <td className="px-3 py-2.5 text-xs font-mono">{log.latency_ms}ms</td>
-        <td className="px-3 py-2.5 text-xs font-mono">{log.ttft_ms}ms</td>
-        <td className="px-3 py-2.5 text-xs font-mono">${log.estimated_cost.toFixed(6)}</td>
-        <td className="px-3 py-2.5 text-xs font-mono">{log.tokens_used}</td>
-        <td className="px-3 py-2.5">
-          <span className={`h-1.5 w-1.5 rounded-full inline-block ${log.status === "success" ? "bg-green-500" : "bg-red-500"}`} />
+        <td className="px-4 py-4 text-sm font-mono text-primary">{log.selected_model}</td>
+        <td className="px-4 py-4 text-sm font-mono text-muted-foreground">{log.latency_ms}ms</td>
+        <td className="px-4 py-4 text-sm font-mono text-muted-foreground">{log.ttft_ms}ms</td>
+        <td className="px-4 py-4 text-sm font-mono text-success">${log.estimated_cost.toFixed(6)}</td>
+        <td className="px-4 py-4 text-sm font-mono text-muted-foreground">{log.tokens_used}</td>
+        <td className="px-4 py-4">
+          <span className={`h-2 w-2 rounded-full inline-block ${log.status === "success" ? "bg-success shadow-[0_0_8px_rgba(0,255,157,0.5)]" : "bg-danger shadow-[0_0_8px_rgba(255,51,102,0.5)]"}`} />
         </td>
-        <td className="px-3 py-2.5 text-muted-foreground">
-          <svg className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+        <td className="px-4 py-4 text-muted-foreground">
+          <svg className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-180 text-primary" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
         </td>
       </tr>
       {expanded && (
-        <tr className="bg-secondary/10">
-          <td colSpan={10} className="px-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <tr className="bg-[#0a0a0a]">
+          <td colSpan={10} className="px-6 py-6 border-b border-border/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Routing decision details */}
-              <div className="space-y-3">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Routing Decision</div>
-                <div className="text-xs text-muted-foreground">{log.reason}</div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-secondary/40 rounded px-2 py-1.5">
-                    <div className="text-[9px] text-muted-foreground">Input</div>
-                    <div className="text-xs font-mono">{log.input_tokens} tokens</div>
+              <div className="space-y-4">
+                <div className="text-xs font-medium uppercase tracking-widest text-primary">Routing Decision</div>
+                <div className="text-sm text-foreground/80 leading-relaxed bg-surface/30 p-4 rounded-xl border border-border">{log.reason}</div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-surface rounded-xl px-4 py-3 border border-border">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Input</div>
+                    <div className="text-sm font-mono">{log.input_tokens} <span className="text-xs text-muted-foreground">tok</span></div>
                   </div>
-                  <div className="bg-secondary/40 rounded px-2 py-1.5">
-                    <div className="text-[9px] text-muted-foreground">Output</div>
-                    <div className="text-xs font-mono">{log.output_tokens} tokens</div>
+                  <div className="bg-surface rounded-xl px-4 py-3 border border-border">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Output</div>
+                    <div className="text-sm font-mono">{log.output_tokens} <span className="text-xs text-muted-foreground">tok</span></div>
                   </div>
-                  <div className="bg-secondary/40 rounded px-2 py-1.5">
-                    <div className="text-[9px] text-muted-foreground">Provider</div>
-                    <div className="text-xs font-mono">{log.selected_provider}</div>
+                  <div className="bg-surface rounded-xl px-4 py-3 border border-border">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Provider</div>
+                    <div className="text-sm font-mono uppercase tracking-widest">{log.selected_provider}</div>
                   </div>
                 </div>
               </div>
               {/* Candidates */}
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {log.candidates_considered && log.candidates_considered.length > 0 && (
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Candidates Considered</div>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Candidates Considered</div>
+                    <div className="flex flex-wrap gap-2">
                       {log.candidates_considered.map((c) => (
-                        <Badge key={c} variant="outline" className={`text-[9px] ${c === log.selected_model ? "border-primary text-primary" : ""}`}>
-                          {c} {c === log.selected_model && " (selected)"}
-                        </Badge>
+                        <span key={c} className={`text-xs font-mono px-3 py-1.5 rounded-md border ${c === log.selected_model ? "border-primary/50 text-primary bg-primary/10" : "border-border text-muted-foreground bg-surface"}`}>
+                          {c} {c === log.selected_model && <span className="text-[10px] uppercase tracking-widest ml-1 opacity-70">(selected)</span>}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
                 {log.candidates_eliminated && Object.keys(log.candidates_eliminated).length > 0 && (
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Eliminated</div>
-                    {Object.entries(log.candidates_eliminated).map(([model, reason]) => (
-                      <div key={model} className="flex items-center gap-2 text-xs py-0.5">
-                        <Badge variant="outline" className="text-[9px] border-red-500/30 text-red-400">{model}</Badge>
-                        <span className="text-muted-foreground">{reason}</span>
-                      </div>
-                    ))}
+                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Eliminated</div>
+                    <div className="space-y-2">
+                      {Object.entries(log.candidates_eliminated).map(([model, reason]) => (
+                        <div key={model} className="flex items-start gap-3 text-sm bg-danger/5 border border-danger/20 rounded-lg p-3">
+                          <span className="text-xs font-mono text-danger mt-0.5">{model}</span>
+                          <span className="text-muted-foreground">{reason}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -130,87 +130,103 @@ export default function CustomerLogsPage() {
   const filteredLogs = tierFilter === "all" ? logs : logs.filter((l) => l.classification === tierFilter);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-500">
-      <div className="flex items-start justify-between">
+    <div className="space-y-12 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">{customer?.customer_name} — Request Logs</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{logs.length} requests logged</p>
+          <h1 className="text-4xl font-light tracking-tight mb-2">{customer?.customer_name}</h1>
+          <p className="text-lg text-muted-foreground">Request logs and routing analytics.</p>
         </div>
-        <Link href={`/customers/${id}`}><Button variant="outline" size="sm" className="text-xs">Back to Profile</Button></Link>
+        <Link href={`/customers/${id}`}>
+          <Button variant="outline" className="border-border hover:bg-surface">
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+            Back to Profile
+          </Button>
+        </Link>
       </div>
 
       {/* Charts */}
       {stats && stats.total_requests > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Model Distribution</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={180}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Model Distribution</h3>
+            <div className="bg-surface/30 border border-border rounded-2xl p-6 h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={modelData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" stroke="none" label={({ name, value }) => `${name} (${value})`}>
+                  <Pie data={modelData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" stroke="none" label={({ name, value }) => `${name} (${value})`} labelLine={false}>
                     {modelData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={TT_STYLE} />
                 </PieChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Complexity Breakdown</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={tierData}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                  <YAxis tick={{ fontSize: 9, fill: "#6b7280" }} />
-                  <Tooltip contentStyle={TT_STYLE} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {tierData.map((d) => <Cell key={d.name} fill={d.name === "simple" ? "#34d399" : d.name === "complex" ? "#f87171" : "#fbbf24"} />)}
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Complexity Breakdown</h3>
+            <div className="bg-surface/30 border border-border rounded-2xl p-6 h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={tierData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#888888", fontFamily: "var(--font-jetbrains-mono)" }} axisLine={false} tickLine={false} dy={10} />
+                  <YAxis tick={{ fontSize: 12, fill: "#888888", fontFamily: "var(--font-jetbrains-mono)" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={TT_STYLE} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
+                    {tierData.map((d) => <Cell key={d.name} fill={d.name === "simple" ? "#00ff9d" : d.name === "complex" ? "#ff3366" : "#ffb800"} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Filter */}
-      <div className="flex gap-1.5">
-        {["all", "simple", "medium", "complex"].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTierFilter(t)}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              tierFilter === t ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            }`}
-          >{t}</button>
-        ))}
-        <span className="text-xs text-muted-foreground ml-2 self-center">{filteredLogs.length} results</span>
-      </div>
-
-      {/* Log table */}
-      <Card className="bg-card/50 border-border/50 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-border/30 bg-secondary/20">
-                {["Time", "Prompt", "Tier", "Model", "Latency", "TTFT", "Cost", "Tokens", "Status", ""].map((h) => (
-                  <th key={h} className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted-foreground font-medium">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map((log) => (
-                <LogRow
-                  key={log.id}
-                  log={log}
-                  expanded={expandedId === log.id}
-                  onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)}
-                />
-              ))}
-            </tbody>
-          </table>
+      {/* Filter & Table */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex gap-2 bg-surface/50 p-1 rounded-lg border border-border">
+            {["all", "simple", "medium", "complex"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTierFilter(t)}
+                className={`px-4 py-2 rounded-md text-xs font-medium uppercase tracking-widest transition-all duration-300 ${
+                  tierFilter === t ? "bg-primary text-primary-foreground shadow-[0_0_10px_rgba(0,229,255,0.2)]" : "text-muted-foreground hover:text-foreground hover:bg-surface"
+                }`}
+              >{t}</button>
+            ))}
+          </div>
+          <span className="text-sm font-mono text-muted-foreground">{filteredLogs.length} results</span>
         </div>
-      </Card>
+
+        <div className="bg-[#0a0a0a] border border-border rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border bg-surface/80">
+                  {["Time", "Prompt", "Tier", "Model", "Latency", "TTFT", "Cost", "Tokens", "Status", ""].map((h) => (
+                    <th key={h} className="px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-6 py-12 text-center text-muted-foreground">
+                      No logs found for this filter.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLogs.map((log) => (
+                    <LogRow
+                      key={log.id}
+                      log={log}
+                      expanded={expandedId === log.id}
+                      onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
